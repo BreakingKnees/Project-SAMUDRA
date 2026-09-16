@@ -1,0 +1,21 @@
+# Build & Binary Artifacts
+build/
+bin/
+*.o
+*.so
+*.a
+*.exe
+*.out
+
+# Python & Cache Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and OS metadata
+*.log
+.DS_Store
+Thumbs.db
