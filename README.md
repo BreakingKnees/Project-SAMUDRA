@@ -307,3 +307,59 @@ python3 tools/plot_waveform_modulation.py
 - **Hydroacoustic Modeling & Firmware Engine:** Autonomous Systems & DSP Firmware Team
 - **Host Test Harness & Verification:** Software Quality & Automated Validation Infrastructure
 - **License:** Proprietary. Copyright (c) 2026 HOLY LARP. Unauthorized copying, modification, or distribution is strictly prohibited. See `LICENSE` file for full terms.
+
+## 11. References & Theoretical Foundations
+
+### Physical Oceanography & Acoustic Propagation
+1. **Mackenzie, K. V. (1981).** "Nine-term equation for sound speed in the oceans." *The Journal of the Acoustical Society of America*, 70(3), 807–812.  
+   *Used in `adaptive_sonar_engine.c:Mackenzie_Sound_Speed()` for thermodynamic velocity calibration across temperature, salinity, and hydrostatic depth.*
+2. **Ainslie, M. A., & McColm, J. G. (1998).** "A simplified formula for viscous and chemical absorption of sound in sea water." *The Journal of the Acoustical Society of America*, 103(3), 1671–1672.  
+   *Governs chemical relaxation absorption of $B(OH)_3$ and $MgSO_4$ in the $100\text{ kHz} - 500\text{ kHz}$ bisection engine.*
+3. **Francois, R. E., & Garrison, G. R. (1982).** "Sound absorption based on ocean measurements. Part II: Boric acid contribution and overall assessment for arbitrary sea water." *The Journal of the Acoustical Society of America*, 72(6), 1879–1890.  
+   *Benchmark reference utilized in `docs/TEST_VERIFICATION_REPORT.md` to confirm the +2.5% to +5.5% conservative error margin of the Ainslie-McColm implementation.*
+4. **Urick, R. J. (1983).** *Principles of Underwater Sound* (3rd ed.). McGraw-Hill.  
+   *Foundational formulation for the monostatic Active Sonar Equation, Directivity Index scaling ($+20\log_{10} f$), and thermal ambient noise density ($N_0$).*
+5. **Urick, R. J. (1948).** "The absorption of sound in suspensions of irregular particles." *The Journal of the Acoustical Society of America*, 20(3), 283–289.  
+   *Governs viscous boundary layer dissipation and Rayleigh particulate scattering models for estuarine turbidity maximums ($C_v$).*
+6. **Thorne, P. D., & Meral, R. (2008).** "Formulations for the scattering properties of suspended sandy sediments for use in the calculation of high frequency acoustic backscatter and attenuation." *The Journal of the Acoustical Society of America*, 124(2), 856–866.  
+   *Validation standard for high-frequency acoustic attenuation in sediment-laden coastal waveguides.*
+
+---
+
+### Radar/Sonar Signal Processing & Pulse Compression
+7. **Kroszczyński, J. J. (1969).** "Pulse compression by means of linear-period modulation." *Proceedings of the IEEE*, 57(7), 1260–1266.  
+   *Mathematical foundation for the Doppler-invariant Hyperbolic Frequency Modulated (HFM) chirp implemented in `chirp.c:MOD_HFM`.*
+8. **Cook, C. E., & Bernfeld, M. (1993).** *Radar Signals: An Introduction to Theory and Application*. Artech House.  
+   *Governs time-bandwidth product scaling ($BT$), matched-filter impulse response convolution, and processing gain formulations ($PG = 10\log_{10}(BT)$).*
+9. **Barker, R. H. (1953).** "Group Synchronizing of Binary Digital Systems." In W. Jackson (Ed.), *Communication Theory* (pp. 273–287). Academic Press.  
+   *Defines the optimal 13-element binary phase sequence ($c = [+1, +1, +1, +1, +1, -1, -1, +1, +1, -1, +1, -1, +1]$) and its theoretical $-22.28\text{ dB}$ peak sidelobe ratio implemented in `chirp.c:MOD_BARKER13`.*
+10. **Harris, F. J. (1978).** "On the use of windows for harmonic analysis with the discrete Fourier transform." *Proceedings of the IEEE*, 66(1), 51–83.  
+    *Theoretical basis for the five windowing functions (`WIN_RECT`, `WIN_TUKEY`, `WIN_HANN`, `WIN_HAMMING`, `WIN_BLACKMAN`) and sidelobe suppression limits in `chirp.c:chirp_window()`.*
+11. **Levanon, N., & Mozeson, E. (2004).** *Radar Signals*. John Wiley & Sons.  
+    *Governs ambiguity function derivation and wideband Range-Doppler coupling analysis under AUV kinematic velocity dilation.*
+
+---
+
+### Analog Front-End, Filter Synthesis & Transducers
+12. **Thomson, W. E. (1949).** "Delay networks having maximally flat frequency characteristics." *Proceedings of the IEE - Part III: Radio and Communication Engineering*, 96(44), 487–490.  
+    *Polynomial root derivation for the 4th-order active reconstruction filter ensuring maximally flat group delay ($<10\text{ ns}$ variation).*
+13. **Sallen, R. P., & Key, E. L. (1955).** "A practical method of designing RC active filters." *IRE Transactions on Circuit Theory*, 2(1), 74–85.  
+    *Governs the cascaded dual-stage unity-gain operational amplifier topology modeled in `hardware/ltspice/AFE_draft1.asc`.*
+14. **Zverev, A. I. (1967).** *Handbook of Filter Synthesis*. John Wiley & Sons.  
+    *Design tables for normalized Bessel filter $Q$-factors ($Q_1 = 0.548$, $Q_2 = 0.813$) and pole scaling factors.*
+15. **Smith, W. A., & Auld, B. A. (1991).** "Modeling 1-3 composite piezoelectrics: Thickness-mode oscillations." *IEEE Transactions on Ultrasonics, Ferroelectrics, and Frequency Control*, 38(1), 40–47.  
+    *Physical justification for wideband ($Q \approx 4.5$, $B = 0.22 f_c$) acoustic emission across $100\text{ kHz} - 500\text{ kHz}$ via acoustic impedance matching to seawater ($1.5\text{ MRayl}$).*
+16. **Sherman, C. H., & Butler, J. L. (2007).** *Transducers and Arrays for Underwater Sound*. Springer.  
+    *Butterworth-Van Dyke (BVD) lumped-element electromechanical circuit modeling and ring-down decay time constant formulations ($\tau \approx Q / (\pi f_c)$).*
+
+---
+
+### Embedded Architectures & Numerical Algorithms
+17. **Tierney, J., Rader, C., & Gold, B. (1971).** "A digital frequency synthesizer." *IEEE Transactions on Audio and Electroacoustics*, 19(1), 48–57.  
+    *Mathematical foundation for discrete phase accumulation and Numerically Controlled Oscillator (NCO) lookup table architectures.*
+18. **Volder, J. E. (1959).** "The CORDIC trigonometric computing technique." *IRE Transactions on Electronic Computers*, EC-8(3), 330–334.  
+    *Hardware co-processor architecture referenced for ARM Cortex-M4 fixed-point angle rotation.*
+19. **STMicroelectronics. (2023).** *RM0440: STM32G4 Series Reference Manual - Advanced Arm-based 32-bit MCUs*. Rev 8.  
+    *Register specifications for Timer 6 (TIM6_TRGO), DMA1 Channel 1 memory-to-peripheral requests, and high-speed unbuffered DAC1 operation.*
+20. **National Institute of Ocean Technology (NIOT). (2026).** *Problem Statement SIH26058: Development of Software-Defined Sonar Transmitter Payload for Autonomous Underwater Vehicles*. Ministry of Earth Sciences, Government of India.  
+    *Governing problem statement defining the operational envelope, carrier frequencies ($100\text{–}500\text{ kHz}$), multi-waveform modes, and power constraints.*
