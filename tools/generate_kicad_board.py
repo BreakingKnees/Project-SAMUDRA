@@ -142,7 +142,17 @@ def generate_board():
     ]
     
     fp_instances = {}
+    
+    # We want to place non-MH components in a spaced-out grid
+    grid_i = 0
     for ref, lib, fp_name, x, y in components:
+        if ref.startswith("MH"):
+            pos_x, pos_y = x, y
+        else:
+            pos_x = 7.0 + (grid_i % 8) * 8.0
+            pos_y = 7.0 + (grid_i // 8) * 7.0
+            grid_i += 1
+            
         fp_path = f"/usr/share/kicad/footprints/{lib}.pretty"
         try:
             fp = pcbnew.FootprintLoad(fp_path, fp_name)
@@ -150,7 +160,7 @@ def generate_board():
                 print(f"Warning: Footprint not found: {lib}:{fp_name}")
                 continue
             fp.SetReference(ref)
-            fp.SetPosition(pcbnew.wxPoint(pcbnew.FromMM(x), pcbnew.FromMM(y)))
+            fp.SetPosition(pcbnew.wxPoint(pcbnew.FromMM(pos_x), pcbnew.FromMM(pos_y)))
             board.Add(fp)
             fp_instances[ref] = fp
         except Exception as e:
