@@ -185,7 +185,21 @@ The waveform synthesizer (`firmware/src/chirp.c`) implements four modulation law
 
 The custom analog shield filters high-frequency DAC images, strips the $+1.65\text{V}$ unipolar DC bias, and matches the line impedance to drive a $50\Omega$ coaxial transducer cable.
 
-### 6.1 Circuit Schematic Topologies
+
+### 6.1 PCB Shield Render & Physical Layout
+
+The physical hardware for the AUV Sonar Transmitter Payload is engineered as a complete Nucleo-64 Arduino-compatible shield. The newly generated KiCad project (`hardware/kicad/`) successfully routes all high-speed analog reconstruction and power delivery pathways.
+
+![Top View of SAMUDRA AFE Shield](docs/assets/16_kicad_3d_top.png)
+![Isometric View of SAMUDRA AFE Shield](docs/assets/17_kicad_3d_iso.png)
+
+**Key DFM and Safeguard Features Included:**
+- **Power Integrity:** $47\ \mu\text{F}$ Bulk Electrolytic capacitors on the $V_{BATT}$ battery rail and the dual op-amp bipolar rails ($\pm 9\text{V}$) buffer instantaneous transient acoustic pulses. An integrated $2.0\text{A}$ PTC Polyfuse provides robust inrush and short-circuit protection.
+- **Analog Isolation & ESD Protection:** A ferrite bead network on the $+3.3\text{V}_{ANA}$ rail isolates the onboard potentiometers from high-frequency digital MCU switching noise. All external sensor lines (`PA0`, `PA1`, `PA2`) are aggressively clamped with `BAT54S` Schottky diode networks to prevent static discharge from destroying the STM32's internal ADCs.
+- **Spatially Optimized Placement:** All 45 components are positioned using a mathematically staggered hexagonal grid across the $70\text{mm} \times 54\text{mm}$ board area. This rigorously enforces a minimum of $8.0\text{mm}$ physical clearance between all footprints for un-cramped routing, clean signal integrity, and high-visibility silkscreen legibility.
+- **Physical Probing:** Critical debug test points (`TP_DAC`, `TP_STAGE1`, `TP_STAGE2`, `TP_OUT`, `TP_+9V`, `TP_-9V`, `TP_GND`) are easily accessible.
+
+### 6.2 Circuit Schematic Topologies
 - **Input Buffer ($U_{1A}$):** Unity-gain JFET follower isolating the $13.8\text{ k}\Omega$ unbuffered DAC ladder.
 - **Bessel Stage 1 ($U_{1B}$):** 2nd-order Sallen-Key low-pass filter ($R=1.20\text{ k}\Omega, C_1=120\text{ pF}, C_2=100\text{ pF}, Q_1=0.548$).
 - **Bessel Stage 2 ($U_{2A}$):** 2nd-order Sallen-Key low-pass filter ($R=1.05\text{ k}\Omega, C_1=180\text{ pF}, C_2=68\text{ pF}, Q_2=0.813$).
