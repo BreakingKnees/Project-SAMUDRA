@@ -239,6 +239,31 @@ def generate_board():
     route_pads("C5", "2", "R6", "1", "C5_OUT")
     route_pads("R6", "2", "J2", "1", "R6_OUT")
 
+    # Fix Unconnected GND nets
+    try:
+        zone = pcbnew.ZONE(board)
+        zone.SetLayer(pcbnew.B_Cu)
+        zone.SetNetCode(net_map["GND"].GetNetCode())
+        poly = zone.Outline()
+        poly.NewOutline()
+        poly.Append(int(pcbnew.FromMM(-2)), int(pcbnew.FromMM(-2)))
+        poly.Append(int(pcbnew.FromMM(72)), int(pcbnew.FromMM(-2)))
+        poly.Append(int(pcbnew.FromMM(72)), int(pcbnew.FromMM(56)))
+        poly.Append(int(pcbnew.FromMM(-2)), int(pcbnew.FromMM(56)))
+        board.Add(zone)
+    except Exception as e:
+        print(f"Zone creation/fill failed: {e}")
+
+    # Fix Silkscreen Overlap
+    try:
+        for fp in board.GetFootprints():
+            ref = fp.Reference()
+            pos = ref.GetPosition()
+            pos.y += int(pcbnew.FromMM(2.5))
+            ref.SetPosition(pos)
+    except Exception as e:
+        print(f"Silkscreen overlap fix failed: {e}")
+
     pcbnew.SaveBoard(board_path, board)
     print("Generated KiCad PCB")
 
