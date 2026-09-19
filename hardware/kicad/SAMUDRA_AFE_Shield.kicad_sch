@@ -1,0 +1,11 @@
+(kicad_sch (version 20230121) (generator eeschema)
+  (uuid 8f230713-162e-46c0-9d0b-68e1ab40ebfb)
+  (paper "A4")
+  (title_block
+    (title "PROJECT SAMUDRA | AUV SONAR PAYLOAD")
+    (date "2026-09-19")
+    (rev "REV 1.0 (2026)")
+    (company "NIOT SIH26058")
+    (comment 1 "4th-Order Bessel AFE Shield")
+  )
+)
