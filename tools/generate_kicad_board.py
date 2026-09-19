@@ -144,14 +144,27 @@ def generate_board():
     fp_instances = {}
     
     # We want to place non-MH components in a spaced-out grid
+    mhs = [(4,4), (66,4), (66,50), (4,50)]
+    slots = []
+    d = 8.0
+    dy = d * math.sqrt(3) / 2
+    for row in range(7):
+        y = 5.0 + row * dy
+        for col in range(8):
+            x = 5.0 + col * d + (4.0 if row%2==1 else 0)
+            if all(math.hypot(x - mh[0], y - mh[1]) >= 5.0 for mh in mhs):
+                slots.append((x, y))
+
     grid_i = 0
     for ref, lib, fp_name, x, y in components:
         if ref.startswith("MH"):
             pos_x, pos_y = x, y
         else:
-            pos_x = 7.0 + (grid_i % 8) * 8.0
-            pos_y = 7.0 + (grid_i // 8) * 7.0
-            grid_i += 1
+            if grid_i < len(slots):
+                pos_x, pos_y = slots[grid_i]
+                grid_i += 1
+            else:
+                pos_x, pos_y = x, y
             
         fp_path = f"/usr/share/kicad/footprints/{lib}.pretty"
         try:
