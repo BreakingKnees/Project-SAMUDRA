@@ -258,13 +258,42 @@ def generate_board():
     try:
         for fp in board.GetFootprints():
             ref = fp.Reference()
-            pos = ref.GetPosition()
-            pos.y += int(pcbnew.FromMM(2.5))
-            ref.SetPosition(pos)
+            pad_bbs = [pad.GetBoundingBox() for pad in fp.Pads()]
+            fp_center = fp.GetCenter()
+            
+            # Start with a +2.5mm Y offset locally as suggested, or search around if needed
+            best_pos = ref.GetPosition()
+            found = False
+            
+            for r in range(5, 30):  # search outward in 0.5mm steps
+                dist = int(pcbnew.FromMM(0.5 * r))
+                for dx, dy in [(0, 1), (0, -1), (-1, 0), (1, 0), (-1, -1), (1, -1), (-1, 1), (1, 1)]:
+                    test_pos = pcbnew.wxPoint(fp_center.x + dx * dist, fp_center.y + dy * dist)
+                    ref.SetPosition(test_pos)
+                    ref_bb = ref.GetBoundingBox()
+                    if not any(ref_bb.Intersects(p_bb) for p_bb in pad_bbs):
+                        best_pos = test_pos
+                        found = True
+                        break
+                if found:
+                    break
+                    
+            if found:
+                ref.SetPosition(best_pos)
     except Exception as e:
         print(f"Silkscreen overlap fix failed: {e}")
 
     pcbnew.SaveBoard(board_path, board)
+    
+    # Reload, fill zones, and save again to avoid segfaults
+    try:
+        board_reloaded = pcbnew.LoadBoard(board_path)
+        filler = pcbnew.ZONE_FILLER(board_reloaded)
+        filler.Fill(board_reloaded.Zones())
+        pcbnew.SaveBoard(board_path, board_reloaded)
+    except Exception as e:
+        print(f"Zone fill on reload failed: {e}")
+        
     print("Generated KiCad PCB")
 
 def write_kicad_files():
